@@ -2,7 +2,7 @@ import path from 'path';
 import { execSync } from 'child_process';
 import config from '../../config/index';
 
-export const getMergeFields = () =>
+export const getMigrateFields = () =>
     config.COLLECTIONS.map(collectionName => {
         const sourceDbSchemaJSON = execSync(`mongo ${config.SOURCE_DB} --port ${config.DB_PORT} --quiet --eval "var collection = '${collectionName}', outputFormat='json'" ${path.resolve(__dirname, './libs/variety.js')}`).toString();
         const targetDbSchemaJSON = execSync(`mongo ${config.TARGET_DB} --port ${config.DB_PORT} --quiet --eval "var collection = '${collectionName}', outputFormat='json'" ${path.resolve(__dirname, './libs/variety.js')}`).toString();
@@ -31,7 +31,7 @@ export const getMergeFields = () =>
 
         return {
             collectionName,
-            mergeFieldsDefs: fieldsSpecificToTargetDb
+            migrateFieldsDefs: fieldsSpecificToTargetDb
                 .map(def => ({
                     fieldName: def._id.key,
                     types: Object.keys(def.value.types),

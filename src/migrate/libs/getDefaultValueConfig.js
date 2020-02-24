@@ -34,8 +34,29 @@ const config = {
         'profile.role.': {
             regExp: true,
             noCheck: true,
-        }
-    }
+        },
+        'profile.timeoff': {
+            selector: {},
+            value: {
+                allowedTime: 0
+            },
+        },
+        'profile.timeoff.': {
+            regExp: true,
+            noCheck: true,
+        },
+    },
+    contractors: {
+        'nickname': {
+            noCheck: true,
+        },
+        'oldContractorId': {
+            noCheck: true,
+        },
+        'submissionClone': {
+            noCheck: true,
+        },
+    },
 };
 
 const normalize = obj => {
