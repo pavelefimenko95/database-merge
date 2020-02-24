@@ -1,0 +1,24 @@
+{
+  "name": "migrateDbApp",
+  "version": "1.0.0",
+  "description": "",
+  "main": "compareShemas.js",
+  "scripts": {
+    "migrate": "node index.js migrate",
+    "merge": "node index.js merge"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bluebird": "^3.7.2",
+    "lodash": "^4.17.15",
+    "mongodb": "^3.5.3"
+  },
+  "devDependencies": {
+    "babel-plugin-transform-object-rest-spread": "^6.26.0",
+    "babel-polyfill": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
+    "babel-register": "^6.26.0"
+  }
+}
