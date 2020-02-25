@@ -7,9 +7,11 @@ const config = {
             selector: {},
             value: false,
         },
+        'profile.admin': {
+            noCheck: true,
+        },
         'profile.isPTOAdmin': {
-            selector: {},
-            value: false,
+            noCheck: true,
         },
         'profile.role': [
             {
@@ -35,6 +37,46 @@ const config = {
             regExp: true,
             noCheck: true,
         },
+        'profile.shifts': {
+            selector: {
+                'profile.shifts': {
+                    $exists: false
+                },
+            },
+            value: {
+                weekDays: 'Mon-Fri',
+                timeOfDay: 'Day'
+            },
+        },
+        'profile.shifts.timeOfDay': {
+            selector: {
+                $or: [
+                    { 'profile.shifts.timeOfDay': { $exists: false } },
+                    { 'profile.shifts.timeOfDay': 'None' },
+                    { 'profile.shifts.timeOfDay': '' },
+                ]
+            },
+            value: 'Day',
+        },
+        'profile.shifts.weekDays': [
+            {
+                selector: {
+                    $or: [
+                        { 'profile.shifts.weekDays': { $exists: false } },
+                        { 'profile.shifts.weekDays': 'None' },
+                        { 'profile.shifts.weekDays': '' },
+                        { 'profile.shifts.weekDays': 'M-Th' },
+                    ]
+                },
+                value: 'Mon-Fri',
+            },
+            {
+                selector: {
+                    'profile.shifts.weekDays': 'Th-Su',
+                },
+                value: 'Sun-Thu',
+            }
+        ],
         'profile.timeoff': {
             selector: {},
             value: {
@@ -46,6 +88,16 @@ const config = {
             noCheck: true,
         },
     },
+    cipProjects: {
+        'description': {
+            selector: {
+                description: {
+                    $exists: false,
+                },
+            },
+            value: ''
+        }
+    },
     contractors: {
         'nickname': {
             noCheck: true,
@@ -56,6 +108,49 @@ const config = {
         'submissionClone': {
             noCheck: true,
         },
+    },
+    equipment: {
+        'deleted': {
+            noCheck: true,
+        },
+        'deletedAt': {
+            noCheck: true,
+        },
+        'yearMade': [
+            {
+                selector: {
+                    yearMade: '',
+                },
+                value: '',
+                delete: true,
+            },
+            {
+                selector: {
+                    yearMade: {
+                        $exists: true,
+                    },
+                },
+                value: {
+                    $convert: {input: '$yearMade', to: 'int'},
+                },
+                aggregation: true,
+            }
+        ],
+    },
+    materials: {
+        'discrete': {
+            noCheck: true,
+        },
+        'line.description': {
+            noCheck: true,
+        },
+        'other': {
+            regExp: true,
+            noCheck: true,
+        }
+    },
+    projects: {
+
     },
 };
 
@@ -75,6 +170,10 @@ const normalize = obj => {
 export const getDefaultValueConfig = (collectionName, fieldName) => {
     const collectionConfig = normalize(config)[collectionName];
 
+    if (!collectionConfig) {
+        throw new Error(`No default value config for collection "${collectionName}"`);
+    }
+
     const fieldConfigs = collectionConfig[fieldName];
     if (!fieldConfigs || !fieldConfigs.length) {
         const fieldConfigKeys = Object
@@ -84,7 +183,7 @@ export const getDefaultValueConfig = (collectionName, fieldName) => {
             );
 
         if (fieldConfigKeys.length !== 1) {
-            // throw new Error(`No default value config for "${fieldName}"`);
+            throw new Error(`No default value config for "${fieldName}"`);
         } else {
             return collectionConfig[fieldConfigKeys[0]];
         }
