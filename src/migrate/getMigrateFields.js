@@ -1,12 +1,15 @@
 import path from 'path';
 import Promise from 'bluebird';
-import { execSync } from 'child_process';
+import { exec } from 'child_process';
 import config from '../../config/index';
 
+const execAsync = Promise.promisify(exec);
+
 export const getMigrateFields = (sourceDb, targetDb) =>
-    Promise.mapSeries(config.COLLECTIONS, async collectionName => {
-        const sourceDbSchemaJSON = execSync(`mongo ${config.SOURCE_DB} --port ${config.DB_PORT} --quiet --eval "var collection = '${collectionName}', outputFormat='json'" ${path.resolve(__dirname, './libs/variety.js')}`).toString();
-        const targetDbSchemaJSON = execSync(`mongo ${config.TARGET_DB} --port ${config.DB_PORT} --quiet --eval "var collection = '${collectionName}', outputFormat='json'" ${path.resolve(__dirname, './libs/variety.js')}`).toString();
+    Promise.all(config.COLLECTIONS.map(async collectionName => {
+        const sourceDbSchemaJSON = (await execAsync(`mongo ${config.SOURCE_DB} --port ${config.DB_PORT} --quiet --eval "var collection = '${collectionName}', outputFormat='json'" ${path.resolve(__dirname, './libs/variety.js')}`)).toString();
+        const targetDbSchemaJSON = (await execAsync(`mongo ${config.TARGET_DB} --port ${config.DB_PORT} --quiet --eval "var collection = '${collectionName}', outputFormat='json'" ${path.resolve(__dirname, './libs/variety.js')}`)).toString();
+
         const sourceDbSchema = JSON.parse(sourceDbSchemaJSON);
         const targetDbSchema = JSON.parse(targetDbSchemaJSON);
 
@@ -37,9 +40,6 @@ export const getMigrateFields = (sourceDb, targetDb) =>
         const fieldsSpecificToSourceDb = sourceDbSchema.filter(outerFieldDef =>
             !targetDbSchema.some(innerFieldDef => innerFieldDef._id.key === outerFieldDef._id.key)
         );
-        if (fieldsSpecificToSourceDb.length) {
-            throw new Error(`SOURCE_DB ("${collectionName}") cannot have fields that don't exist in TARGET_DB`);
-        }
 
         const fieldsRequireTypeChange = sourceDbSchema.filter(outerFieldDef =>
             targetDbSchema.some(innerFieldDef => {
@@ -50,15 +50,13 @@ export const getMigrateFields = (sourceDb, targetDb) =>
                 return isMatched;
             })
         );
-        if (fieldsRequireTypeChange.length) {
-            console.warn(`SOURCE_DB ("${collectionName}") has fields that don't match by type with the ones in TARGET_DB: ${fieldsRequireTypeChange.map(i => i._id.key)}`);
-        }
 
         const fieldsSpecificToTargetDb = targetDbSchema.filter(outerFieldDef =>
             !sourceDbSchema.some(innerFieldDef => innerFieldDef._id.key === outerFieldDef._id.key)
         );
 
         const migrateFieldsDefs = [
+            ...fieldsSpecificToSourceDb.map(item => ({...item, description: 'to delete'})),
             ...fieldsSpecificToTargetDb.map(item => ({...item, description: 'to add'})),
             ...fieldsRequireTypeChange.map(item => ({...item, description: `change type from ${JSON.stringify(item.value.types)} to ${JSON.stringify(item.changeTypeTo)}`})),
         ]
@@ -74,4 +72,4 @@ export const getMigrateFields = (sourceDb, targetDb) =>
             collectionName,
             migrateFieldsDefs,
         };
-    });
+    }));

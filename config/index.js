@@ -16,10 +16,10 @@ module.exports = {
         'materials',
         'notes',
         'plannedSheets',
-        'projects', // SOURCE_DB cannot have fields that don't match by type with the ones in TARGET_DB (type change isn't supported)
-        // 'settings', // no default fields
-        // 'sheets', // SOURCE_DB cannot have fields that don't exist in TARGET_DB
-        // 'submissions', // SOURCE_DB cannot have fields that don't exist in TARGET_DB
+        'projects',
+        'settings',
+        'sheets', // SOURCE_DB cannot have fields that don't exist in TARGET_DB
+        'submissions',
         'timeclock',
     ],
 };

@@ -1,5 +1,11 @@
 import _ from 'lodash';
 import { extPermissions } from './helperData';
+import sheetsMigration from '../migrations/sheets.migrations';
+
+// additional props
+// noCheck - skip migration for this field
+// regExp - allow this field to be searched by regexp if no exact matches found
+// delete - delete field
 
 const config = {
     users: {
@@ -147,18 +153,58 @@ const config = {
         'other': {
             regExp: true,
             noCheck: true,
-        }
+        },
     },
     projects: {
-
+        'earningsCode': {
+            noCheck: true,
+        },
+        'oldProjectId': {
+            noCheck: true,
+        },
+        'rated': {
+            selector: {
+                rated: {
+                    $exists: false
+                },
+            },
+            value: false,
+        },
+        'shift': {
+            selector: {},
+            value: 'Day',
+        },
+        'submissionClone': {
+            noCheck: true,
+        },
+        'travelTime': {
+            noCheck: true,
+            regExp: true,
+        },
+        'wages': {
+            noCheck: true,
+        },
+    },
+    settings: {
+        'allowedTimeoff': {
+            selector: {},
+            value: 0,
+        },
+    },
+    sheets: sheetsMigration,
+    submissions: {
+        'signatures.dot.time': {
+            noCheck: true,
+        },
     },
 };
 
+// converting selector to array
 const normalize = obj => {
     Object
         .keys(obj)
         .forEach(collectionName =>
-            Object
+            typeof obj[collectionName] !== 'function' && Object
                 .keys(obj[collectionName])
                 .forEach(fieldName => {
                     obj[collectionName][fieldName] = _.isPlainObject(obj[collectionName][fieldName]) ? [obj[collectionName][fieldName]] : obj[collectionName][fieldName]
@@ -174,19 +220,23 @@ export const getDefaultValueConfig = (collectionName, fieldName) => {
         throw new Error(`No default value config for collection "${collectionName}"`);
     }
 
-    const fieldConfigs = collectionConfig[fieldName];
-    if (!fieldConfigs || !fieldConfigs.length) {
-        const fieldConfigKeys = Object
-            .keys(collectionConfig)
-            .filter(key =>
-                (new RegExp(key)).test(fieldName) && collectionConfig[key].every(fieldConfig => fieldConfig.regExp)
-            );
+    if (!fieldName) {
+        return collectionConfig;
+    } else {
+        const fieldConfigs = collectionConfig[fieldName];
+        if (!fieldConfigs || !fieldConfigs.length) {
+            const fieldConfigKeys = Object
+                .keys(collectionConfig)
+                .filter(key =>
+                    (new RegExp(key)).test(fieldName) && collectionConfig[key].every(fieldConfig => fieldConfig.regExp)
+                );
 
-        if (fieldConfigKeys.length !== 1) {
-            throw new Error(`No default value config for "${fieldName}"`);
-        } else {
-            return collectionConfig[fieldConfigKeys[0]];
+            if (fieldConfigKeys.length !== 1) {
+                throw new Error(`No default value config for "${fieldName}"`);
+            } else {
+                return collectionConfig[fieldConfigKeys[0]];
+            }
         }
+        return fieldConfigs;
     }
-    return fieldConfigs;
 };
