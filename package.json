@@ -15,7 +15,8 @@
     "bluebird": "^3.7.2",
     "lodash": "^4.17.15",
     "moment": "^2.24.0",
-    "mongodb": "^3.5.3"
+    "mongodb": "^3.5.3",
+    "uuid": "^7.0.1"
   },
   "devDependencies": {
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
