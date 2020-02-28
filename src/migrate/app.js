@@ -8,17 +8,23 @@ export const app = async (sourceDb, targetDb, client) => {
     const migrateFields = await getMigrateFields(sourceDb, targetDb);
     console.log(`Fields to migrate count: `, migrateFields.reduce((prev, next) => (Number.isInteger(prev) ? prev : prev.migrateFieldsDefs.length) + (Number.isInteger(next) ? next : next.migrateFieldsDefs.length)));
 
+    migrateFields.forEach(({migrateFieldsDefs}) => {
+        if(migrateFieldsDefs.length) {
+            migrateFieldsDefs.forEach(def => console.log(`Field: ${def.fieldName} (${def.description})`));
+        } else {
+            console.log('No fields to migrate');
+        }
+    });
+
     await Promise.each(migrateFields, async ({collectionName, migrateFieldsDefs}) => {
         console.log(`////// Migrating collection: ${collectionName}`);
         if (migrateFieldsDefs.length) {
 
-
             const collection = sourceDb.collection(collectionName);
             const migrationFunction = getDefaultValueConfig(collectionName);
 
-            migrateFieldsDefs.forEach(def => console.log(`Field: ${def.fieldName} (${def.description})`));
             if (typeof migrationFunction === 'function') {
-                // await migrationFunction(sourceDb);
+                await migrationFunction(sourceDb);
             } else {
                 await Promise.each(migrateFieldsDefs, async def => {
 
@@ -35,8 +41,6 @@ export const app = async (sourceDb, targetDb, client) => {
                     })
                 });
             }
-        } else {
-            console.log('No fields to migrate');
         }
     });
     console.log(`MIGRATION COMPLETED in ${((Date.now() - startTime) / 1000).toFixed(0)} sec`);
