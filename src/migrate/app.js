@@ -22,17 +22,17 @@ export const app = async (sourceDb, targetDb, client) => {
             } else {
                 await Promise.each(migrateFieldsDefs, async def => {
 
-                    // const fieldConfigs = getDefaultValueConfig(collectionName, def.fieldName);
-                    //
-                    // await Promise.each(fieldConfigs, config => {
-                    //     const toUpdate = {
-                    //         [config.delete ? '$unset' : '$set']: {
-                    //             [def.fieldName]: config.value
-                    //         }
-                    //     };
-                    //
-                    //     !config.noCheck && collection.updateMany(config.selector, config.aggregation ? [toUpdate] : toUpdate);
-                    // })
+                    const fieldConfigs = getDefaultValueConfig(collectionName, def.fieldName);
+
+                    await Promise.each(fieldConfigs, config => {
+                        const toUpdate = config.overrideToUpdate ? config.value : {
+                            [config.delete ? '$unset' : '$set']: {
+                                [def.fieldName]: config.value
+                            }
+                        };
+
+                        !config.noCheck && collection.updateMany(config.selector, config.aggregation ? [toUpdate] : toUpdate);
+                    })
                 });
             }
         } else {

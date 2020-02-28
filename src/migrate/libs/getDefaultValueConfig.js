@@ -6,12 +6,12 @@ import sheetsMigration from '../migrations/sheets.migrations';
 // noCheck - skip migration for this field
 // regExp - allow this field to be searched by regexp if no exact matches found
 // delete - delete field
+// overrideToUpdate - overrides default $set
 
 const config = {
     users: {
         'deleted': {
-            selector: {},
-            value: false,
+            noCheck: true,
         },
         'profile.admin': {
             noCheck: true,
@@ -19,19 +19,20 @@ const config = {
         'profile.isPTOAdmin': {
             noCheck: true,
         },
+        // from project migration
         'profile.role': [
             {
                 selector: {
-                    'profile.admin': true
+                    'profile.admin': true,
                 },
                 value: {
                     roleName: 'Admin',
-                    extPermissions: extPermissions['Admin']
+                    extPermissions: extPermissions['Admin'],
                 },
             },
             {
                 selector: {
-                    'profile.admin': false
+                    'profile.admin': false,
                 },
                 value: {
                     roleName: 'Field Technician',
@@ -43,6 +44,7 @@ const config = {
             regExp: true,
             noCheck: true,
         },
+        // from project migration
         'profile.shifts': {
             selector: {
                 'profile.shifts': {
@@ -51,9 +53,10 @@ const config = {
             },
             value: {
                 weekDays: 'Mon-Fri',
-                timeOfDay: 'Day'
+                timeOfDay: 'Day',
             },
         },
+        // from project migration
         'profile.shifts.timeOfDay': {
             selector: {
                 $or: [
@@ -64,6 +67,7 @@ const config = {
             },
             value: 'Day',
         },
+        // from project migration
         'profile.shifts.weekDays': [
             {
                 selector: {
@@ -83,6 +87,7 @@ const config = {
                 value: 'Sun-Thu',
             }
         ],
+        // from project migration
         'profile.timeoff': {
             selector: {},
             value: {
@@ -116,9 +121,25 @@ const config = {
         },
     },
     equipment: {
+        // from project migration
         'deleted': {
-            noCheck: true,
+            selector: {
+                deleted: {
+                    $exists: true,
+                    $ne: false,
+                },
+            },
+            value: {
+                $set: {
+                    deletedAt: new Date(),
+                },
+                $unset: {
+                    deleted: 1,
+                },
+            },
+            overrideToUpdate: true,
         },
+        // from project migration
         'deletedAt': {
             noCheck: true,
         },
@@ -162,6 +183,7 @@ const config = {
         'oldProjectId': {
             noCheck: true,
         },
+        // from project migration
         'rated': {
             selector: {
                 rated: {
@@ -195,6 +217,11 @@ const config = {
     submissions: {
         'signatures.dot.time': {
             noCheck: true,
+        },
+        'processed': {
+            selector: {},
+            value: '',
+            delete: true,
         },
     },
 };

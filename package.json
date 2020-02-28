@@ -6,7 +6,7 @@
   "scripts": {
     "migrate": "node index.js migrate",
     "merge": "node index.js merge",
-    "restore": "node ./helperScripts/restoreDatabases.js"
+    "restore": "node ./libs/restoreDatabases.js"
   },
   "keywords": [],
   "author": "",

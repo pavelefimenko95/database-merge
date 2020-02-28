@@ -57,7 +57,7 @@ export const getMigrateFields = (sourceDb, targetDb) =>
 
         const migrateFieldsDefs = [
             ...fieldsSpecificToSourceDb.map(item => ({...item, description: 'to delete'})),
-            ...fieldsSpecificToTargetDb.map(item => ({...item, description: 'to add'})),
+            ...fieldsSpecificToTargetDb.map(item => ({...item, description: `to add, type: ${JSON.stringify(item.value.types)}`})),
             ...fieldsRequireTypeChange.map(item => ({...item, description: `change type from ${JSON.stringify(item.value.types)} to ${JSON.stringify(item.changeTypeTo)}`})),
         ]
             .map(def => ({
