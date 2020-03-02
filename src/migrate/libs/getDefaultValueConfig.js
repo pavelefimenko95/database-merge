@@ -2,7 +2,9 @@ import _ from 'lodash';
 import { extPermissions } from './helperData';
 import sheetsMigration from '../migrations/sheets.migrations';
 
-// additional props
+// ==============================
+// Additional props
+// ==============================
 // noCheck - skip migration for this field
 // regExp - allow this field to be searched by regexp if no exact matches found
 // delete - delete field
