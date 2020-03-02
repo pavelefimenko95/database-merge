@@ -8,7 +8,8 @@ export const app = async (sourceDb, targetDb, client) => {
     const migrateFields = await getMigrateFields(sourceDb, targetDb);
     console.log(`Fields to migrate count: `, migrateFields.reduce((prev, next) => (Number.isInteger(prev) ? prev : prev.migrateFieldsDefs.length) + (Number.isInteger(next) ? next : next.migrateFieldsDefs.length)));
 
-    migrateFields.forEach(({migrateFieldsDefs}) => {
+    migrateFields.forEach(({migrateFieldsDefs, collectionName}) => {
+        console.log(`////// ${collectionName} collection diffs`);
         if(migrateFieldsDefs.length) {
             migrateFieldsDefs.forEach(def => console.log(`Field: ${def.fieldName} (${def.description})`));
         } else {
@@ -30,14 +31,14 @@ export const app = async (sourceDb, targetDb, client) => {
 
                     const fieldConfigs = getDefaultValueConfig(collectionName, def.fieldName);
 
-                    await Promise.each(fieldConfigs, config => {
+                    await Promise.each(fieldConfigs, async config => {
                         const toUpdate = config.overrideToUpdate ? config.value : {
                             [config.delete ? '$unset' : '$set']: {
                                 [def.fieldName]: config.value
                             }
                         };
 
-                        !config.noCheck && collection.updateMany(config.selector, config.aggregation ? [toUpdate] : toUpdate);
+                        !config.noCheck && await collection.updateMany(config.selector, config.aggregation ? [toUpdate] : toUpdate);
                     })
                 });
             }
