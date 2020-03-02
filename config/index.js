@@ -18,7 +18,7 @@ module.exports = {
         'plannedSheets',
         'projects',
         'settings',
-        'sheets', // SOURCE_DB cannot have fields that don't exist in TARGET_DB
+        'sheets',
         'submissions',
         'timeclock',
     ],
