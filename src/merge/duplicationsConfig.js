@@ -8,6 +8,11 @@ export const duplicationsConfigs = {
     ],
     'cipHours': [
         '_id',
+        [
+            'timeclockId',
+            'userId',
+            'cipProjectId',
+        ],
     ],
     'cipProjects': [
         '_id',
@@ -38,11 +43,14 @@ export const duplicationsConfigs = {
         '_id',
         'jobNumber',
     ],
-    'settings': [
-        '_id',
-    ],
     'sheets': [
         '_id',
+        [
+            'contractorId',
+            'projectId',
+            'hours.start',
+            'hours.end',
+        ],
     ],
     'submissions': [
         '_id',

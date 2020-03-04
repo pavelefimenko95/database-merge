@@ -1,4 +1,6 @@
 import Promise from 'bluebird';
+import _ from 'lodash';
+import moment from 'moment';
 import config from '../../config';
 import { duplicationsConfigs } from './duplicationsConfig';
 
@@ -12,26 +14,51 @@ export const app = async (sourceDb, targetDb, client) => {
         const sourceDbDocuments = await sourceDbCollection.find({}).toArray();
 
         const documentsToInsert = (await Promise.mapSeries(sourceDbDocuments, async doc => {
-            const duplicationsConfig = duplicationsConfigs[collectionName];
+            let isDuplicate;
 
-            const isDuplicate = duplicationsConfig && !!await targetDbCollection.findOne({
-                $or: duplicationsConfig.map(duplicationDef => {
-                    let condition = {};
+            if (collectionName === 'calendarEvents') {
+                const timeoffsCollection = targetDb.collection('timeoffs');
 
-                    if (typeof duplicationDef === 'string' && doc[duplicationDef]) {
-                        condition[duplicationDef] = doc[duplicationDef];
-                    } else {
-                        duplicationDef.forEach(fieldName => {
-                            if(doc[fieldName]) {
-                                condition[fieldName] = doc[fieldName];
-                            }
-                        });
-                    }
+                const isCalendarEventsDuplicate = await targetDbCollection.findOne({
+                    $or: [
+                        {_id: doc._id},
+                        {
+                            start: doc['start'],
+                            end: doc['end'],
+                            resourceId: doc['resourceId'],
+                        }
+                    ],
+                });
 
-                    return condition;
-                }),
-            });
+                const startFormatted = moment(doc['start'], 'YYYY-MM-DD').format('DD/MM/YYYY');
 
+                const isTimeoffsDuplicate = await timeoffsCollection.findOne({
+                    inDays: startFormatted,
+                    userId: doc['resourceId'],
+                });
+
+                isDuplicate = isCalendarEventsDuplicate || isTimeoffsDuplicate;
+            } else {
+                const duplicationsConfig = duplicationsConfigs[collectionName];
+
+                isDuplicate = duplicationsConfig && !!await targetDbCollection.findOne({
+                    $or: duplicationsConfig.map(duplicationDef => {
+                        let condition = {};
+
+                        if (typeof duplicationDef === 'string' && doc[duplicationDef]) {
+                            condition[duplicationDef] = doc[duplicationDef];
+                        } else {
+                            duplicationDef.forEach(fieldName => {
+                                if(_.get(doc, fieldName)) {
+                                    _.set(condition, fieldName,  _.get(doc, fieldName));
+                                }
+                            });
+                        }
+
+                        return condition;
+                    }),
+                });
+            }
             return !isDuplicate && doc;
         })).filter(v => v);
 

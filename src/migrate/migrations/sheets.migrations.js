@@ -3,6 +3,9 @@ import { v4 as uuidv4 } from 'uuid';
 
 export default async db => {
     const Sheets = db.collection('sheets');
+    const Settings = db.collection('settings');
+
+    const settings = await Settings.findOne({});
 
     const convertTime = (createdAt, hour, minute, amPm) => {
         const startOfDay = moment(createdAt).startOf('day');
@@ -113,6 +116,26 @@ export default async db => {
                 console.error(e);
             }
         }));
+    } catch(e) {
+        console.error(e);
+    }
+
+    // startTime - default value
+
+    try {
+        await Sheets.updateMany({
+            startTime: {
+                $exists: false,
+            },
+        }, {
+            $set: {
+                startTime: {
+                    hourStart: settings.defaultDayTime.hour,
+                    minuteStart: settings.defaultDayTime.minute,
+                    amPmStart: settings.defaultDayTime.amPm,
+                },
+            },
+        });
     } catch(e) {
         console.error(e);
     }
