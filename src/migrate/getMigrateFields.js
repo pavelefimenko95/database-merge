@@ -6,7 +6,7 @@ import config from '../../config/index';
 const execAsync = Promise.promisify(exec);
 
 export const getMigrateFields = (sourceDb, targetDb) =>
-    Promise.all(config.COLLECTIONS.map(async collectionName => {
+    Promise.all(config.MIGRATE_COLLECTIONS.map(async collectionName => {
         const sourceDbSchemaJSON = (await execAsync(`mongo ${config.SOURCE_DB} --port ${config.DB_PORT} --quiet --eval "var collection = '${collectionName}', outputFormat='json'" ${path.resolve(__dirname, './libs/variety.js')}`)).toString();
         const targetDbSchemaJSON = (await execAsync(`mongo ${config.TARGET_DB} --port ${config.DB_PORT} --quiet --eval "var collection = '${collectionName}', outputFormat='json'" ${path.resolve(__dirname, './libs/variety.js')}`)).toString();
 

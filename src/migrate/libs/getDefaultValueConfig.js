@@ -8,6 +8,7 @@ import sheetsMigration from '../migrations/sheets.migrations';
 // noCheck - skip migration for this field
 // regExp - allow this field to be searched by regexp if no exact matches found
 // delete - delete field
+// aggregation - is toUpdate contains aggregation
 // overrideToUpdate - overrides default $set
 
 const config = {
@@ -179,6 +180,12 @@ const config = {
         },
     },
     projects: {
+        'baseRate': {
+            noCheck: true,
+        },
+        'fringeBenefit': {
+            noCheck: true,
+        },
         'earningsCode': {
             noCheck: true,
         },
@@ -225,10 +232,15 @@ const config = {
             value: '',
             delete: true,
         },
+        'toEmail': {
+            noCheck: true,
+        },
     },
 };
 
-// converting selector to array
+// ==============================
+// Сonverting selector to array
+// ==============================
 const normalize = obj => {
     Object
         .keys(obj)

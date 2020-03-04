@@ -3,7 +3,7 @@ import config from '../../config';
 import { duplicationsConfigs } from './duplicationsConfig';
 
 export const app = async (sourceDb, targetDb, client) => {
-    await Promise.each(config.COLLECTIONS, async collectionName => {
+    await Promise.each(config.MERGE_COLLECTIONS, async collectionName => {
         console.log(`////// Merging ${collectionName}`);
 
         const sourceDbCollection = sourceDb.collection(collectionName);
@@ -15,9 +15,21 @@ export const app = async (sourceDb, targetDb, client) => {
             const duplicationsConfig = duplicationsConfigs[collectionName];
 
             const isDuplicate = duplicationsConfig && !!await targetDbCollection.findOne({
-                $or: duplicationsConfig.map(fieldName => ({
-                    [fieldName]: doc[fieldName],
-                })),
+                $or: duplicationsConfig.map(duplicationDef => {
+                    let condition = {};
+
+                    if (typeof duplicationDef === 'string' && doc[duplicationDef]) {
+                        condition[duplicationDef] = doc[duplicationDef];
+                    } else {
+                        duplicationDef.forEach(fieldName => {
+                            if(doc[fieldName]) {
+                                condition[fieldName] = doc[fieldName];
+                            }
+                        });
+                    }
+
+                    return condition;
+                }),
             });
 
             return !isDuplicate && doc;

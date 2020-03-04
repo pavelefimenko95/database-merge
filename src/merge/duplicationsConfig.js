@@ -11,21 +11,22 @@ export const duplicationsConfigs = {
     ],
     'cipProjects': [
         '_id',
+        'name',
     ],
     'contractors': [
         '_id',
+        'name',
     ],
     'equipment': [
         '_id',
+        [
+            'name',
+            'number',
+        ],
     ],
     'manufacturers': [
         '_id',
-    ],
-    'material-options': [
-        '_id',
-    ],
-    'materials': [
-        '_id',
+        'name',
     ],
     'notes': [
         '_id',
@@ -35,6 +36,7 @@ export const duplicationsConfigs = {
     ],
     'projects': [
         '_id',
+        'jobNumber',
     ],
     'settings': [
         '_id',
@@ -49,3 +51,10 @@ export const duplicationsConfigs = {
         '_id',
     ],
 };
+
+// cipProjects - name
+// contractor - name
+// equipment - (name, number)
+// manufacturers - name?
+// materials, material-options - no check ?
+// projects - jobNumber
