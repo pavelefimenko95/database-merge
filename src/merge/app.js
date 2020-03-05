@@ -2,7 +2,7 @@ import Promise from 'bluebird';
 import _ from 'lodash';
 import moment from 'moment';
 import config from '../../config';
-import { duplicationsConfigs } from './duplicationsConfig';
+import { duplicationsConfigs, relationsConfig } from './mergeConfigs';
 
 export const app = async (sourceDb, targetDb, client) => {
     await Promise.each(config.MERGE_COLLECTIONS, async collectionName => {
@@ -59,6 +59,32 @@ export const app = async (sourceDb, targetDb, client) => {
                     }),
                 });
             }
+
+            if (isDuplicate) {
+                await sourceDbCollection.remove({
+                    _id: doc._id,
+                });
+
+                const dependantRelations = Object
+                    .keys(relationsConfig)
+                    .map(collection => {
+                        const relations = relationsConfig[collection];
+                        return relations
+                            .filter(relation => relation.belongsTo === collectionName)
+                            .map(relation => ({
+                                ...relation,
+                                collection,
+                            }));
+                    })
+                    .reduce((prev, next) => [...prev, ...next]);
+
+                await Promise.all(dependantRelations.map(async ({collection, foreignKey}) =>
+                    sourceDb[collection].remove({
+                        [foreignKey]: doc._id,
+                    })
+                ));
+            }
+
             return !isDuplicate && doc;
         })).filter(v => v);
 

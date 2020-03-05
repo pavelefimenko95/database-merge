@@ -1,4 +1,5 @@
 import moment from 'moment';
+import Promise from 'bluebird';
 import { v4 as uuidv4 } from 'uuid';
 
 export default async db => {
@@ -90,32 +91,50 @@ export default async db => {
     try {
         await Promise.all((await Sheets.find({}).toArray()).map(async sheet => {
             try {
-                const sameDaySheetsPositions = (await Sheets.find({
-                    createdAt: {
-                        $gte: moment(sheet.createdAt).startOf('day').toDate(),
-                        $lt: moment(sheet.createdAt).endOf('day').toDate(),
-                    },
-                    'grid.position': {
-                        $exists: true,
-                    },
-                }).toArray())
-                    .map(sheet => sheet.grid.position);
-                if(sameDaySheetsPositions.length) console.log(sameDaySheetsPositions.length);
-
-                const position = sameDaySheetsPositions.length ? (sameDaySheetsPositions.reduce((prev, next) => next > prev ? next : prev) + 1) : 0;
-
-                Sheets.updateOne({
+                await Sheets.updateOne({
                     _id: sheet._id,
                 }, {
                     $set: {
                         'grid.date': moment(sheet.createdAt).format('DD-MM-YYYY'),
-                        'grid.position': position,
+                        'grid.position': 'EMPTY',
                     },
                 })
             } catch(e) {
                 console.error(e);
             }
         }));
+    } catch(e) {
+        console.error(e);
+    }
+
+    // grid position
+    try {
+        await Promise.each((await Sheets.find({}).toArray()), async sheet => {
+            try {
+                const sameDaySheetsPositions = (await Sheets.find({
+                    createdAt: {
+                        $gte: moment(sheet.createdAt).startOf('day').toDate(),
+                        $lt: moment(sheet.createdAt).endOf('day').toDate(),
+                    },
+                    'grid.position': {
+                        $ne: 'EMPTY',
+                    },
+                }).toArray())
+                    .map(sheet => sheet.grid.position);
+
+                const position = sameDaySheetsPositions.length ? (sameDaySheetsPositions.reduce((prev, next) => next > prev ? next : prev) + 1) : 0;
+                console.log(position);
+                await Sheets.updateOne({
+                    _id: sheet._id,
+                }, {
+                    $set: {
+                        'grid.position': position,
+                    },
+                })
+            } catch(e) {
+                console.error(e);
+            }
+        });
     } catch(e) {
         console.error(e);
     }
