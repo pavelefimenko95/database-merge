@@ -78,38 +78,38 @@ export const relationsConfig = {
     //         foreignKey: 'resourceId',
     //     },
     // ],
-    'cipHours': [
-        {
-            belongsTo: 'cipProjects',
-            foreignKey: 'cipProjectId',
-        },
-    ],
-    'notes': [
-        {
-            belongsTo: 'projects',
-            foreignKey: 'projectId',
-        },
-    ],
-    'plannedSheets': [
-        {
-            belongsTo: 'projects',
-            foreignKey: 'projectId',
-        },
-        {
-            belongsTo: 'contractors',
-            foreignKey: 'contractorId',
-        },
-    ],
-    'sheets': [
-        {
-            belongsTo: 'projects',
-            foreignKey: 'projectId',
-        },
-        {
-            belongsTo: 'contractors',
-            foreignKey: 'contractorId',
-        },
-    ],
+    // 'cipHours': [
+    //     {
+    //         belongsTo: 'cipProjects',
+    //         foreignKey: 'cipProjectId',
+    //     },
+    // ],
+    // 'notes': [
+    //     {
+    //         belongsTo: 'projects',
+    //         foreignKey: 'projectId',
+    //     },
+    // ],
+    // 'plannedSheets': [
+    //     {
+    //         belongsTo: 'projects',
+    //         foreignKey: 'projectId',
+    //     },
+    //     {
+    //         belongsTo: 'contractors',
+    //         foreignKey: 'contractorId',
+    //     },
+    // ],
+    // 'sheets': [
+    //     {
+    //         belongsTo: 'projects',
+    //         foreignKey: 'projectId',
+    //     },
+    //     {
+    //         belongsTo: 'contractors',
+    //         foreignKey: 'contractorId',
+    //     },
+    // ],
     'submissions': [
         {
             belongsTo: 'sheets',

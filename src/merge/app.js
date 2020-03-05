@@ -61,7 +61,7 @@ export const app = async (sourceDb, targetDb, client) => {
             }
 
             if (isDuplicate) {
-                await sourceDbCollection.remove({
+                await sourceDbCollection.deleteOne({
                     _id: doc._id,
                 });
 
@@ -76,10 +76,10 @@ export const app = async (sourceDb, targetDb, client) => {
                                 collection,
                             }));
                     })
-                    .reduce((prev, next) => [...prev, ...next]);
+                    .reduce((prev, next) => [...prev, ...next], []);
 
-                await Promise.all(dependantRelations.map(async ({collection, foreignKey}) =>
-                    sourceDb[collection].remove({
+                await Promise.all(dependantRelations.map(({collection, foreignKey}) =>
+                    sourceDb.collection(collection).deleteMany({
                         [foreignKey]: doc._id,
                     })
                 ));

@@ -123,7 +123,7 @@ export default async db => {
                     .map(sheet => sheet.grid.position);
 
                 const position = sameDaySheetsPositions.length ? (sameDaySheetsPositions.reduce((prev, next) => next > prev ? next : prev) + 1) : 0;
-                console.log(position);
+
                 await Sheets.updateOne({
                     _id: sheet._id,
                 }, {
