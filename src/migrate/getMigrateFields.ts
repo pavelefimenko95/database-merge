@@ -1,12 +1,12 @@
 import path from 'path';
-import Promise from 'bluebird';
+import Bluebird from 'bluebird';
 import { exec } from 'child_process';
-import config from '../../config/index';
+import config from '../config';
 
-const execAsync = Promise.promisify(exec);
+const execAsync = Bluebird.promisify(exec);
 
 export const getMigrateFields = (sourceDb, targetDb) =>
-    Promise.all(config.MIGRATE_COLLECTIONS.map(async collectionName => {
+    Bluebird.all(config.MIGRATE_COLLECTIONS.map(async collectionName => {
         const sourceDbSchemaJSON = (await execAsync(`mongo ${config.SOURCE_DB} --port ${config.DB_PORT} --quiet --eval "var collection = '${collectionName}', outputFormat='json'" ${path.resolve(__dirname, './libs/variety.js')}`)).toString();
         const targetDbSchemaJSON = (await execAsync(`mongo ${config.TARGET_DB} --port ${config.DB_PORT} --quiet --eval "var collection = '${collectionName}', outputFormat='json'" ${path.resolve(__dirname, './libs/variety.js')}`)).toString();
 
@@ -14,7 +14,7 @@ export const getMigrateFields = (sourceDb, targetDb) =>
         const targetDbSchema = JSON.parse(targetDbSchemaJSON);
 
         // adding undefined type
-        await Promise.each(sourceDbSchema, async def => {
+        await Bluebird.each(sourceDbSchema, async def => {
             const collection = sourceDb.collection(collectionName);
             const documentsWithoutField = await collection.find({
                 [def._id.key]: {
@@ -25,7 +25,7 @@ export const getMigrateFields = (sourceDb, targetDb) =>
                 def.value.types["Undefined"] = documentsWithoutField.length;
             }
         });
-        await Promise.each(targetDbSchema, async def => {
+        await Bluebird.each(targetDbSchema, async def => {
             const collection = targetDb.collection(collectionName);
             const documentsWithoutField = await collection.find({
                 [def._id.key]: {

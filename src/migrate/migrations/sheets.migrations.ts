@@ -1,5 +1,5 @@
 import moment from 'moment';
-import Promise from 'bluebird';
+import Bluebird from 'bluebird';
 import { v4 as uuidv4 } from 'uuid';
 
 export default async db => {
@@ -18,7 +18,7 @@ export default async db => {
 
     // equipment.XX.hours (regEx: true)
     try {
-        await Promise.all((await Sheets.find({'equipment': {$exists: true}}).toArray()).map(async sheet => {
+        await Bluebird.all((await Sheets.find({'equipment': {$exists: true}}).toArray()).map(async sheet => {
             try {
                 let { equipment } = sheet;
 
@@ -89,7 +89,7 @@ export default async db => {
 
     // grid (regEx: true)
     try {
-        await Promise.all((await Sheets.find({}).toArray()).map(async sheet => {
+        await Bluebird.all((await Sheets.find({}).toArray()).map(async sheet => {
             try {
                 await Sheets.updateOne({
                     _id: sheet._id,
@@ -109,7 +109,7 @@ export default async db => {
 
     // grid position
     try {
-        await Promise.each((await Sheets.find({}).toArray()), async sheet => {
+        await Bluebird.each((await Sheets.find({}).toArray()), async sheet => {
             try {
                 const sameDaySheetsPositions = (await Sheets.find({
                     createdAt: {
@@ -161,7 +161,7 @@ export default async db => {
 
     // hours (converting to format)
     try {
-        await Promise.all((await Sheets.find({
+        await Bluebird.all((await Sheets.find({
             hours: {
                 $exists: true,
             }
@@ -195,7 +195,7 @@ export default async db => {
 
     // in case
     try {
-        await Promise.all((await Sheets.find({
+        await Bluebird.all((await Sheets.find({
             hours: {
                 $exists: false,
             },
@@ -304,7 +304,7 @@ export default async db => {
 
     // weather
     try {
-        await Promise.all((await Sheets.find({weather: {$ne: null}}).toArray()).map(async sheet => {
+        await Bluebird.all((await Sheets.find({weather: {$ne: null}}).toArray()).map(async sheet => {
             try {
                 const { weather } = sheet;
 
@@ -334,7 +334,7 @@ export default async db => {
 
     // workers
     try {
-        await Promise.all((await Sheets.find({workers: {$exists: true}}).toArray()).map(async sheet => {
+        await Bluebird.all((await Sheets.find({workers: {$exists: true}}).toArray()).map(async sheet => {
             try {
                 sheet.workers.forEach(worker => {
                     worker.hours.forEach(hoursDef => {

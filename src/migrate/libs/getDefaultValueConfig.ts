@@ -6,22 +6,15 @@ import sheetsMigration from '../migrations/sheets.migrations';
 // Additional props
 // ==============================
 // noCheck - skip migration for this field
-// regExp - allow this field to be searched by regexp if no exact matches found
 // delete - delete field
 // aggregation - is toUpdate contains aggregation
 // overrideToUpdate - overrides default $set
 
 const config = {
     users: {
-        'deleted': {
-            noCheck: true,
-        },
-        'profile.admin': {
-            noCheck: true,
-        },
-        'profile.isPTOAdmin': {
-            noCheck: true,
-        },
+        'deleted': {noCheck: true,},
+        'profile.admin': {noCheck: true,},
+        'profile.isPTOAdmin': {noCheck: true,},
         // from project migration
         'profile.role': [
             {
@@ -43,10 +36,6 @@ const config = {
                 },
             }
         ],
-        'profile.role.': {
-            regExp: true,
-            noCheck: true,
-        },
         // from project migration
         'profile.shifts': {
             selector: {
@@ -97,10 +86,29 @@ const config = {
                 allowedTime: 0
             },
         },
-        'profile.timeoff.': {
-            regExp: true,
-            noCheck: true,
-        },
+        'profile.role.extPermissions': {noCheck: true,},
+        'profile.role.extPermissions.activeSchedule': {noCheck: true,},
+        'profile.role.extPermissions.availabilityEquipmentEdit': {noCheck: true,},
+        'profile.role.extPermissions.availabilityFullAccess': {noCheck: true,},
+        'profile.role.extPermissions.availabilityRead': {noCheck: true,},
+        'profile.role.extPermissions.cipFullAccess': {noCheck: true,},
+        'profile.role.extPermissions.cipKioskMode': {noCheck: true,},
+        'profile.role.extPermissions.cipProjectsFullAccess': {noCheck: true,},
+        'profile.role.extPermissions.editPTO': {noCheck: true,},
+        'profile.role.extPermissions.equipmentFullAccess': {noCheck: true,},
+        'profile.role.extPermissions.equipmentRead': {noCheck: true,},
+        'profile.role.extPermissions.holidaysCreate': {noCheck: true,},
+        'profile.role.extPermissions.holidaysEdit': {noCheck: true,},
+        'profile.role.extPermissions.projectsFullAccess': {noCheck: true,},
+        'profile.role.extPermissions.projectsRead': {noCheck: true,},
+        'profile.role.extPermissions.remoteKiosk': {noCheck: true,},
+        'profile.role.extPermissions.timeClockFullAccess': {noCheck: true,},
+        'profile.role.extPermissions.usersFullAccess': {noCheck: true,},
+        'profile.role.extPermissions.worklogEdit': {noCheck: true,},
+        'profile.role.extPermissions.worklogEditSubmitted': {noCheck: true,},
+        'profile.role.roleName': {noCheck: true,},
+        'profile.timeoff.allowedTime': {noCheck: true,},
+        'profile.timeoff.availableTimeoffFromHoliday': {noCheck: true,},
     },
     cipProjects: {
         'description': {
@@ -113,15 +121,9 @@ const config = {
         }
     },
     contractors: {
-        'nickname': {
-            noCheck: true,
-        },
-        'oldContractorId': {
-            noCheck: true,
-        },
-        'submissionClone': {
-            noCheck: true,
-        },
+        'nickname': {noCheck: true,},
+        'oldContractorId': {noCheck: true,},
+        'submissionClone': {noCheck: true,},
     },
     equipment: {
         // from project migration
@@ -168,30 +170,16 @@ const config = {
         ],
     },
     materials: {
-        'discrete': {
-            noCheck: true,
-        },
-        'line.description': {
-            noCheck: true,
-        },
-        'other': {
-            regExp: true,
-            noCheck: true,
-        },
+        'discrete': {noCheck: true,},
+        'line.description': {noCheck: true,},
+        'other': {noCheck: true,},
+        'other.quantity': {noCheck: true,},
     },
     projects: {
-        'baseRate': {
-            noCheck: true,
-        },
-        'fringeBenefit': {
-            noCheck: true,
-        },
-        'earningsCode': {
-            noCheck: true,
-        },
-        'oldProjectId': {
-            noCheck: true,
-        },
+        'baseRate': {noCheck: true,},
+        'fringeBenefit': {noCheck: true,},
+        'earningsCode': {noCheck: true,},
+        'oldProjectId': {noCheck: true,},
         // from project migration
         'rated': {
             selector: {
@@ -205,16 +193,11 @@ const config = {
             selector: {},
             value: 'Day',
         },
-        'submissionClone': {
-            noCheck: true,
-        },
-        'travelTime': {
-            noCheck: true,
-            regExp: true,
-        },
-        'wages': {
-            noCheck: true,
-        },
+        'submissionClone': {noCheck: true,},
+        'travelTime': {noCheck: true,},
+        'travelTime.hours': {noCheck: true,},
+        'travelTime.minutes': {noCheck: true,},
+        'wages': {noCheck: true,},
     },
     settings: {
         'allowedTimeoff': {
@@ -224,17 +207,13 @@ const config = {
     },
     sheets: sheetsMigration,
     submissions: {
-        'signatures.dot.time': {
-            noCheck: true,
-        },
+        'signatures.dot.time': {noCheck: true,},
         'processed': {
             selector: {},
             value: '',
             delete: true,
         },
-        'toEmail': {
-            noCheck: true,
-        },
+        'toEmail': {noCheck: true,},
     },
 };
 
@@ -261,23 +240,5 @@ export const getDefaultValueConfig = (collectionName, fieldName) => {
         throw new Error(`No default value config for collection "${collectionName}"`);
     }
 
-    if (!fieldName) {
-        return collectionConfig;
-    } else {
-        const fieldConfigs = collectionConfig[fieldName];
-        if (!fieldConfigs || !fieldConfigs.length) {
-            const fieldConfigKeys = Object
-                .keys(collectionConfig)
-                .filter(key =>
-                    (new RegExp(key)).test(fieldName) && collectionConfig[key].every(fieldConfig => fieldConfig.regExp)
-                );
-
-            if (fieldConfigKeys.length !== 1) {
-                throw new Error(`No default value config for "${fieldName}"`);
-            } else {
-                return collectionConfig[fieldConfigKeys[0]];
-            }
-        }
-        return fieldConfigs;
-    }
+    return fieldName ? collectionConfig[fieldName] : collectionConfig;
 };

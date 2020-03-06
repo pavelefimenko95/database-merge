@@ -1,11 +1,10 @@
-import Promise from 'bluebird';
+import Bluebird from 'bluebird';
 import _ from 'lodash';
-import moment from 'moment';
-import config from '../../config';
-import { duplicationsConfigs, relationsConfig } from './mergeConfigs';
+import config from '../config';
+import { duplicationsConfigs, relationsConfig, manualDuplicationChecks, preMergeMigrations } from './mergeConfigs';
 
 export const app = async (sourceDb, targetDb, client) => {
-    await Promise.each(config.MERGE_COLLECTIONS, async collectionName => {
+    await Bluebird.each(config.MERGE_COLLECTIONS, async collectionName => {
         console.log(`////// Merging ${collectionName}`);
 
         const sourceDbCollection = sourceDb.collection(collectionName);
@@ -13,31 +12,15 @@ export const app = async (sourceDb, targetDb, client) => {
 
         const sourceDbDocuments = await sourceDbCollection.find({}).toArray();
 
-        const documentsToInsert = (await Promise.mapSeries(sourceDbDocuments, async doc => {
-            let isDuplicate;
+        if (preMergeMigrations[collectionName]) {
+            await preMergeMigrations[collectionName](sourceDbCollection, targetDbCollection);
+        }
 
-            if (collectionName === 'calendarEvents') {
-                const timeoffsCollection = targetDb.collection('timeoffs');
+        const documentsToInsert = (await Bluebird.mapSeries(sourceDbDocuments, async doc => {
+            let isDuplicate: boolean;
 
-                const isCalendarEventsDuplicate = await targetDbCollection.findOne({
-                    $or: [
-                        {_id: doc._id},
-                        {
-                            start: doc['start'],
-                            end: doc['end'],
-                            resourceId: doc['resourceId'],
-                        }
-                    ],
-                });
-
-                const startFormatted = moment(doc['start'], 'YYYY-MM-DD').format('DD/MM/YYYY');
-
-                const isTimeoffsDuplicate = await timeoffsCollection.findOne({
-                    inDays: startFormatted,
-                    userId: doc['resourceId'],
-                });
-
-                isDuplicate = isCalendarEventsDuplicate || isTimeoffsDuplicate;
+            if (manualDuplicationChecks[collectionName]) {
+                isDuplicate = await manualDuplicationChecks[collectionName](doc, targetDbCollection, targetDb);
             } else {
                 const duplicationsConfig = duplicationsConfigs[collectionName];
 
@@ -78,7 +61,7 @@ export const app = async (sourceDb, targetDb, client) => {
                     })
                     .reduce((prev, next) => [...prev, ...next], []);
 
-                await Promise.all(dependantRelations.map(({collection, foreignKey}) =>
+                await Bluebird.all(dependantRelations.map(({collection, foreignKey}) =>
                     sourceDb.collection(collection).deleteMany({
                         [foreignKey]: doc._id,
                     })

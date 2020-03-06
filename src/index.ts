@@ -1,19 +1,14 @@
-require('babel-register')({
-    presets: ['env'],
-    plugins: ['transform-object-rest-spread']
-});
-require('babel-polyfill');
-const Promise = require('bluebird');
-const { MongoClient } = Promise.promisifyAll(require('mongodb'));
-const config = require('./config/index');
+import Bluebird from'bluebird';
+const { MongoClient } = Bluebird.promisifyAll(require('mongodb'));
+import config from './config';
 
 let app = null;
 switch(process.argv[2]) {
     case 'migrate':
-        app = require('./src/migrate/app').app;
+        app = require('./migrate/app').app;
         break;
     case 'merge':
-        app = require('./src/merge/app').app;
+        app = require('./merge/app').app;
 }
 
 MongoClient.connect(`mongodb://localhost:${config.DB_PORT}`)

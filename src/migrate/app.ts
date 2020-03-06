@@ -1,4 +1,4 @@
-import Promise from 'bluebird';
+import Bluebird from 'bluebird';
 import { getMigrateFields } from './getMigrateFields';
 import { getDefaultValueConfig } from './libs/getDefaultValueConfig';
 
@@ -17,21 +17,21 @@ export const app = async (sourceDb, targetDb, client) => {
         }
     });
 
-    await Promise.each(migrateFields, async ({collectionName, migrateFieldsDefs}) => {
+    await Bluebird.each(migrateFields, async ({collectionName, migrateFieldsDefs}) => {
         console.log(`////// Migrating collection: ${collectionName}`);
         if (migrateFieldsDefs.length) {
 
             const collection = sourceDb.collection(collectionName);
-            const migrationFunction = getDefaultValueConfig(collectionName);
+            const migrationFunction = getDefaultValueConfig(collectionName, null);
 
             if (typeof migrationFunction === 'function') {
                 await migrationFunction(sourceDb);
             } else {
-                await Promise.each(migrateFieldsDefs, async def => {
+                await Bluebird.each(migrateFieldsDefs, async def => {
 
                     const fieldConfigs = getDefaultValueConfig(collectionName, def.fieldName);
 
-                    await Promise.each(fieldConfigs, async config => {
+                    await Bluebird.each(fieldConfigs, async config => {
                         const toUpdate = config.overrideToUpdate ? config.value : {
                             [config.delete ? '$unset' : '$set']: {
                                 [def.fieldName]: config.value
