@@ -6,7 +6,11 @@ export const app = async (sourceDb, targetDb, client) => {
     const startTime = Date.now();
 
     const migrateFields = await getMigrateFields(sourceDb, targetDb);
-    console.log(`Fields to migrate count: `, migrateFields.reduce((prev, next) => (Number.isInteger(prev) ? prev : prev.migrateFieldsDefs.length) + (Number.isInteger(next) ? next : next.migrateFieldsDefs.length)));
+    console.log(`Fields to migrate count: `,
+        migrateFields.reduce((prev, next) =>
+            (Number.isInteger(prev) ? prev : prev.migrateFieldsDefs.length) + (Number.isInteger(next) ? next : next.migrateFieldsDefs.length)
+        )
+    );
 
     migrateFields.forEach(({migrateFieldsDefs, collectionName}) => {
         console.log(`////// ${collectionName} collection diffs`);
@@ -19,8 +23,8 @@ export const app = async (sourceDb, targetDb, client) => {
 
     await Bluebird.each(migrateFields, async ({collectionName, migrateFieldsDefs}) => {
         console.log(`////// Migrating collection: ${collectionName}`);
-        if (migrateFieldsDefs.length) {
 
+        if (migrateFieldsDefs.length) {
             const collection = sourceDb.collection(collectionName);
             const migrationFunction = getDefaultValueConfig(collectionName, null);
 

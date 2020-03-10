@@ -1,7 +1,7 @@
 import Bluebird from 'bluebird';
 import _ from 'lodash';
 import config from '../config';
-import { duplicationsConfigs, relationsConfig, manualDuplicationChecks, preMergeMigrations } from './mergeConfigs';
+import { duplicationsConfigs, relationsConfig, manualDuplicationChecks, manualRelationsChecks, updateIdRelationsConfig, preMergeMigrations } from './mergeConfigs';
 
 export const app = async (sourceDb, targetDb, client) => {
     await Bluebird.each(config.MERGE_COLLECTIONS, async collectionName => {
@@ -18,13 +18,14 @@ export const app = async (sourceDb, targetDb, client) => {
 
         const documentsToInsert = (await Bluebird.mapSeries(sourceDbDocuments, async doc => {
             let isDuplicate: boolean;
+            let duplicatedRecord;
 
             if (manualDuplicationChecks[collectionName]) {
                 isDuplicate = await manualDuplicationChecks[collectionName](doc, targetDbCollection, targetDb);
             } else {
                 const duplicationsConfig = duplicationsConfigs[collectionName];
 
-                isDuplicate = duplicationsConfig && !!await targetDbCollection.findOne({
+                duplicatedRecord = await targetDbCollection.findOne({
                     $or: duplicationsConfig.map(duplicationDef => {
                         let condition = {};
 
@@ -41,12 +42,17 @@ export const app = async (sourceDb, targetDb, client) => {
                         return condition;
                     }),
                 });
+
+                isDuplicate = duplicationsConfig && !!duplicatedRecord;
             }
 
             if (isDuplicate) {
                 await sourceDbCollection.deleteOne({
                     _id: doc._id,
                 });
+
+                // const manualRelationsCheck = manualRelationsChecks[collectionName];
+                // manualRelationsCheck && await manualRelationsCheck(doc, sourceDbCollection, sourceDb);
 
                 const dependantRelations = Object
                     .keys(relationsConfig)
@@ -61,9 +67,32 @@ export const app = async (sourceDb, targetDb, client) => {
                     })
                     .reduce((prev, next) => [...prev, ...next], []);
 
+                const updateIdDependantRelations = Object
+                    .keys(updateIdRelationsConfig)
+                    .map(collection => {
+                        const relations = updateIdRelationsConfig[collection];
+                        return relations
+                            .filter(relation => relation.belongsTo === collectionName)
+                            .map(relation => ({
+                                ...relation,
+                                collection,
+                            }));
+                    })
+                    .reduce((prev, next) => [...prev, ...next], []);
+
                 await Bluebird.all(dependantRelations.map(({collection, foreignKey}) =>
                     sourceDb.collection(collection).deleteMany({
                         [foreignKey]: doc._id,
+                    })
+                ));
+
+                duplicatedRecord && await Bluebird.all(updateIdDependantRelations.map(({collection, foreignKey}) =>
+                    sourceDb.collection(collection).updateMany({
+                        [foreignKey]: doc._id,
+                    }, {
+                        $set: {
+                            [foreignKey]: duplicatedRecord._id,
+                        },
                     })
                 ));
             }

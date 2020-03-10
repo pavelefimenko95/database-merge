@@ -21,6 +21,15 @@ export const duplicationsConfigs = {
         '_id',
         'name',
     ],
+    'sheets': [
+        '_id',
+        [
+            'contractorId',
+            'projectId',
+            'hours.start',
+            'hours.end',
+        ],
+    ],
     'contractors': [
         '_id',
         'name',
@@ -45,15 +54,6 @@ export const duplicationsConfigs = {
     'projects': [
         '_id',
         'jobNumber',
-    ],
-    'sheets': [
-        '_id',
-        [
-            'contractorId',
-            'projectId',
-            'hours.start',
-            'hours.end',
-        ],
     ],
     'submissions': [
         '_id',
@@ -113,6 +113,7 @@ export const relationsConfig = {
     //         foreignKey: 'contractorId',
     //     },
     // ],
+
     'submissions': [
         {
             belongsTo: 'sheets',
@@ -125,6 +126,35 @@ export const relationsConfig = {
     //         foreignKey: 'userId',
     //     },
     // ],
+};
+
+export const updateIdRelationsConfig = {
+    'sheets': [
+        {
+            belongsTo: 'projects',
+            foreignKey: 'projectId',
+        },
+        {
+            belongsTo: 'contractors',
+            foreignKey: 'contractorId',
+        },
+    ],
+    'plannedSheets': [
+        {
+            belongsTo: 'projects',
+            foreignKey: 'projectId',
+        },
+        {
+            belongsTo: 'contractors',
+            foreignKey: 'contractorId',
+        },
+    ],
+    'notes': [
+        {
+            belongsTo: 'projects',
+            foreignKey: 'projectId',
+        },
+    ],
 };
 
 export const manualDuplicationChecks = {
@@ -150,6 +180,22 @@ export const manualDuplicationChecks = {
         });
 
         return isCalendarEventsDuplicate || isTimeoffsDuplicate;
+    },
+};
+
+export const manualRelationsChecks = {
+    'sheets': async (doc, sourceDbCollection, sourceDb): Promise<void> => {
+        const Projects = sourceDb.collection('projects');
+        const Contractors = sourceDb.collection('contractors');
+
+        await Projects.deleteMany({
+            submissionClone: true,
+            oldProjectId: doc.projectId,
+        });
+        await Contractors.deleteMany({
+            submissionClone: true,
+            oldContractorId: doc.contractorId,
+        });
     },
 };
 
