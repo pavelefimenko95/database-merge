@@ -1,7 +1,7 @@
 import Bluebird from 'bluebird';
 import _ from 'lodash';
 import config from '../config';
-import { duplicationsConfigs, relationsConfig, manualDuplicationChecks, manualRelationsChecks, updateIdRelationsConfig, preMergeMigrations } from './mergeConfigs';
+import { duplicationsConfigs, relationsConfig, manualDuplicationChecks, updateIdRelationsConfig, preMergeMigrations } from './mergeConfigs';
 
 export const app = async (sourceDb, targetDb, client) => {
     await Bluebird.each(config.MERGE_COLLECTIONS, async collectionName => {
@@ -12,10 +12,16 @@ export const app = async (sourceDb, targetDb, client) => {
 
         const sourceDbDocuments = await sourceDbCollection.find({}).toArray();
 
+        // ==========================================
+        // Migration that depends on target db values
+        // ==========================================
         if (preMergeMigrations[collectionName]) {
             await preMergeMigrations[collectionName](sourceDbCollection, targetDbCollection);
         }
 
+        // =======================================================================================
+        // Going throw each record for every collection to filter out duplicates and fix relations
+        // =======================================================================================
         const documentsToInsert = (await Bluebird.mapSeries(sourceDbDocuments, async doc => {
             let isDuplicate: boolean;
             let duplicatedRecord;
@@ -54,6 +60,10 @@ export const app = async (sourceDb, targetDb, client) => {
                 // const manualRelationsCheck = manualRelationsChecks[collectionName];
                 // manualRelationsCheck && await manualRelationsCheck(doc, sourceDbCollection, sourceDb);
 
+
+                // ==============================================================================================
+                // Deleting or updating relations depending on duplication case (id or other fields respectively)
+                // ==============================================================================================
                 const dependantRelations = Object
                     .keys(relationsConfig)
                     .map(collection => {

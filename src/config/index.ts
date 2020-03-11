@@ -1,8 +1,8 @@
 export default {
     SOURCE_DB: 'guidemark',
     TARGET_DB: 'guidemark_beta',
-    SOURCE_DB_DUMP: `~/Documents/else/project-files/Guidmark/dump/guidemark/uncompressed/guidemark_dump_2020-03-06T09:18:38/guidemark/`,
-    TARGET_DB_DUMP: `~/Documents/else/project-files/Guidmark/dump/guidemark_beta/uncompressed/guidemark_beta_dump_2020-03-06T09:14:48/guidemark_beta/`,
+    SOURCE_DB_DUMP: `~/Documents/else/project-files/Guidmark/dump/guidemark/uncompressed/guidemark_dump_2020-03-11T09:07:24/guidemark/`,
+    TARGET_DB_DUMP: `~/Documents/else/project-files/Guidmark/dump/guidemark_beta/uncompressed/guidemark_beta_dump_2020-03-11T09:07:11/guidemark_beta/`,
     DB_PORT: 27017,
     MIGRATE_COLLECTIONS: [
         'users',

@@ -183,21 +183,21 @@ export const manualDuplicationChecks = {
     },
 };
 
-export const manualRelationsChecks = {
-    'sheets': async (doc, sourceDbCollection, sourceDb): Promise<void> => {
-        const Projects = sourceDb.collection('projects');
-        const Contractors = sourceDb.collection('contractors');
-
-        await Projects.deleteMany({
-            submissionClone: true,
-            oldProjectId: doc.projectId,
-        });
-        await Contractors.deleteMany({
-            submissionClone: true,
-            oldContractorId: doc.contractorId,
-        });
-    },
-};
+// export const manualRelationsChecks = {
+//     'sheets': async (doc, sourceDbCollection, sourceDb): Promise<void> => {
+//         const Projects = sourceDb.collection('projects');
+//         const Contractors = sourceDb.collection('contractors');
+//
+//         await Projects.deleteMany({
+//             submissionClone: true,
+//             oldProjectId: doc.projectId,
+//         });
+//         await Contractors.deleteMany({
+//             submissionClone: true,
+//             oldContractorId: doc.contractorId,
+//         });
+//     },
+// };
 
 export const preMergeMigrations = {
     'sheets': async (sourceDbCollection, targetDbCollection): Promise<void> => {
