@@ -23,19 +23,22 @@ export default {
         'timeclock',
     ],
     MERGE_COLLECTIONS: [
+        // priority 1
+        'contractors',
+        // priority 2
+        'projects',
+        // mast be first
         'users',
         'calendarEvents',
         'cipHours',
         'cipProjects',
         'sheets',
-        'contractors',
         'equipment',
         'manufacturers',
         // 'material-options',
         // 'materials',
         'notes',
         'plannedSheets',
-        'projects',
         // 'settings',
         'submissions',
         'timeclock',

@@ -129,6 +129,12 @@ export const relationsConfig = {
 };
 
 export const updateIdRelationsConfig = {
+    'projects': [
+        {
+            belongsTo: 'contractors',
+            foreignKey: 'contractorId',
+        },
+    ],
     'sheets': [
         {
             belongsTo: 'projects',
