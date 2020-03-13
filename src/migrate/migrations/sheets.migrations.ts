@@ -1,8 +1,13 @@
+import { Db } from 'mongodb';
 import moment from 'moment';
 import Bluebird from 'bluebird';
 import { v4 as uuidv4 } from 'uuid';
 
-export default async db => {
+export default async (supportedMigrateFields, db: Db, migrateFields: string[]): Promise<void> => {
+    if (supportedMigrateFields.sort().toString() !== migrateFields.sort().toString()) {
+        throw new Error(`Sheets migration fields are'nt supported by function handler`);
+    }
+
     const Sheets = db.collection('sheets');
     const Settings = db.collection('settings');
     const Projects = db.collection('projects');
@@ -229,8 +234,6 @@ export default async db => {
         console.error(e);
     }
 
-    // hours - no default value logic
-
     // noteComments (noCheck: true)
 
     // notes
@@ -269,8 +272,6 @@ export default async db => {
     } catch(e) {
         console.error(e);
     }
-
-    // startTime - no default value logic
 
     // submittedAt (noCheck: true)
 

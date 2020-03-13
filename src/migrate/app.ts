@@ -29,7 +29,7 @@ export const app = async (sourceDb, targetDb, client) => {
             const migrationFunction = getDefaultValueConfig(collectionName, null);
 
             if (typeof migrationFunction === 'function') {
-                await migrationFunction(sourceDb);
+                await migrationFunction(sourceDb, migrateFieldsDefs.map(def => def.fieldName));
             } else {
                 await Bluebird.each(migrateFieldsDefs, async def => {
 
