@@ -1,16 +1,19 @@
 import Bluebird from 'bluebird';
 import _ from 'lodash';
+import { Collection } from 'mongodb';
 import config from '../config';
 import { duplicationsConfigs, relationsConfig, manualDuplicationChecks, updateIdRelationsConfig, preMergeMigrations } from './mergeConfigs';
+
+// TODO make inserting only after merge migrations
 
 export const app = async (sourceDb, targetDb, client) => {
     await Bluebird.each(config.MERGE_COLLECTIONS, async collectionName => {
         console.log(`////// Merging ${collectionName}`);
 
-        const sourceDbCollection = sourceDb.collection(collectionName);
-        const targetDbCollection = targetDb.collection(collectionName);
+        const sourceDbCollection: Collection = sourceDb.collection(collectionName);
+        const targetDbCollection: Collection = targetDb.collection(collectionName);
 
-        const sourceDbDocuments = await sourceDbCollection.find({}).toArray();
+        const sourceDbDocuments: any[] = await sourceDbCollection.find({}).toArray();
 
         // ==========================================
         // Migration that depends on target db values
@@ -22,7 +25,7 @@ export const app = async (sourceDb, targetDb, client) => {
         // =======================================================================================
         // Going throw each record for every collection to filter out duplicates and fix relations
         // =======================================================================================
-        const documentsToInsert = (await Bluebird.mapSeries(sourceDbDocuments, async doc => {
+        const documentsToInsert: any[] = (await Bluebird.mapSeries(sourceDbDocuments, async doc => {
             let isDuplicate: boolean;
             let duplicatedRecord;
 

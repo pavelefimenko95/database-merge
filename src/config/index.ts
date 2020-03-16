@@ -30,8 +30,9 @@ export default {
         // mast be first
         'users',
         'calendarEvents',
-        'cipHours',
+        // mast be before сipHours
         'cipProjects',
+        'cipHours',
         'sheets',
         'equipment',
         'manufacturers',

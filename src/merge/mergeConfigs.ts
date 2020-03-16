@@ -161,6 +161,12 @@ export const updateIdRelationsConfig = {
             foreignKey: 'projectId',
         },
     ],
+    'cipHours': [
+        {
+            belongsTo: 'cipProjects',
+            foreignKey: 'cipProjectId',
+        },
+    ],
 };
 
 export const manualDuplicationChecks = {
